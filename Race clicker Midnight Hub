@@ -1,61 +1,211 @@
-if game.Players.LocalPlayer.PlayerGui.LeftHUD:FindFirstChild("WinPurchases") then game.Players.LocalPlayer.PlayerGui.LeftHUD.WinPurchases:Destroy() end
+-- Orion Library Loader
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local Window = OrionLib:MakeWindow({Name = "Race Clicker", HidePremium = false, SaveConfig = true, ConfigFolder = "RaceClicker"})
 
-function A() spawn(function () while getgenv().A do
-game:GetService("ReplicatedStorage").Packages.Knit.Services.ClickService.RF.Click:InvokeServer()
-TPCFrame(CFrame.new(-442300, 26, 13)) task.wait()
-TPCFrame(CFrame.new(-442100, 26, 13))
-if not getgenv().A then break end task.wait()
+-- Variables
+getgenv().A = false
+getgenv().B = false
+getgenv().H = false
+getgenv().R = false
+local E = nil
+
+-- Utility Functions
+function TPCFrame(Player_CFrame)
+    if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Player_CFrame
+    end
+end
+
+function A()
+    spawn(function()
+        while getgenv().A do
+            game:GetService("ReplicatedStorage").Packages.Knit.Services.ClickService.RF.Click:InvokeServer()
+            TPCFrame(CFrame.new(-442300, 26, 13))
+            task.wait()
+            TPCFrame(CFrame.new(-442100, 26, 13))
+            if not getgenv().A then break end
+            task.wait()
         end
     end)
 end
-function B() spawn(function () while getgenv().B do
-game:GetService("ReplicatedStorage").Packages.Knit.Services.PetsService.RF.EquipBest:InvokeServer() task.wait(1)
-        end
-    end)
-end
-function H() spawn(function () while getgenv().H do
-local args = {[1] = E,[2] = "1",[3] = {}} game:GetService("ReplicatedStorage").Packages.Knit.Services.EggService.RF.Open:InvokeServer(unpack(args)) task.wait()
-        end
-    end)
-end
-function R() spawn(function () while getgenv().R do
-game:GetService("ReplicatedStorage").Packages.Knit.Services.RebirthService.RF.Rebirth:InvokeServer() task.wait()
+
+function B()
+    spawn(function()
+        while getgenv().B do
+            game:GetService("ReplicatedStorage").Packages.Knit.Services.PetsService.RF.EquipBest:InvokeServer()
+            task.wait(1)
         end
     end)
 end
 
-OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Orion%20Library%202')))()
+function H()
+    spawn(function()
+        while getgenv().H do
+            local args = {[1] = E, [2] = "1", [3] = {}}
+            game:GetService("ReplicatedStorage").Packages.Knit.Services.EggService.RF.Open:InvokeServer(unpack(args))
+            task.wait()
+        end
+    end)
+end
 
-local w = library:CreateWindow("Race Clicker")
+function R()
+    spawn(function()
+        while getgenv().R do
+            game:GetService("ReplicatedStorage").Packages.Knit.Services.RebirthService.RF.Rebirth:InvokeServer()
+            task.wait()
+        end
+    end)
+end
 
-local b = w:CreateFolder("Main")
+-- Main Tab
+local MainTab = Window:MakeTab({
+    Name = "Main",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
 
-b:Toggle("Inf. Wins/Inf. Speed",function(val) getgenv().A = val A() end)
-b:Toggle("Inf. Rebirths",function(val) getgenv().R = val R() end)
-b:Toggle("Equip Best",function(val) getgenv().B = val B() end)
-b:Toggle("Hatch",function(val) getgenv().H = val H() end)
+MainTab:AddToggle({
+    Name = "Inf. Wins/Inf. Speed",
+    Default = false,
+    Callback = function(value)
+        getgenv().A = value
+        if value then A() end
+    end
+})
 
-b:Dropdown("Select",{"Starter01","Starter02","Starter03","Starter04","Pro01","Pro02","Pro03"},true,function(val) E = val end)
+MainTab:AddToggle({
+    Name = "Inf. Rebirths",
+    Default = false,
+    Callback = function(value)
+        getgenv().R = value
+        if value then R() end
+    end
+})
 
-b:Label("Made by Midnight Hub",{TextSize = 23; TextColor = Color3.fromRGB(255,255,255); BgColor = Color3.fromRGB(38, 38, 38);})
+MainTab:AddToggle({
+    Name = "Equip Best",
+    Default = false,
+    Callback = function(value)
+        getgenv().B = value
+        if value then B() end
+    end
+})
 
-local w = library:CreateWindow("LocalPlayer")
+MainTab:AddToggle({
+    Name = "Hatch",
+    Default = false,
+    Callback = function(value)
+        getgenv().H = value
+        if value then H() end
+    end
+})
 
-local b = w:CreateFolder("LP")
+MainTab:AddDropdown({
+    Name = "Select Egg",
+    Default = "Starter01",
+    Options = {"Starter01", "Starter02", "Starter03", "Starter04", "Pro01", "Pro02", "Pro03"},
+    Callback = function(value)
+        E = value
+    end
+})
 
-b:DestroyGui()
+MainTab:AddLabel("Made by Midnight Hub")
 
-b:Button("Discord",function() setclipboard("workink.co/2GQ/LTD") end)
-b:Button("Full Version",function() loadstring(game:HttpGet("https://pastebin.com/raw/GphZf9Xe", true))() end)
-b:Button("Rejoin",function() loadstring(game:HttpGet("https://pastebin.com/raw/mM7JBG5h", true))() end)
-b:Button("Reset",function() loadstring(game:HttpGet("https://pastebin.com/raw/EEY6SATj", true))() end)
+-- Player Tab
+local PlayerTab = Window:MakeTab({
+    Name = "LocalPlayer",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
 
-b:Slider("WalkSpeed",{min = 0; max = 10000; precise = false;},function(val) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = val end)
-b:Slider("JumpPower",{min = 0; max = 10000; precise = false;},function(val) game.Players.LocalPlayer.Character.Humanoid.JumpPower = val end)
-b:Slider("HipHeight",{min = 0; max = 10000; precise = false;},function(val) game.Players.LocalPlayer.Character.Humanoid.HipHeight = val end)
-b:Slider("Gravity",{min = 0; max = 360; precise = false;},function(val) game.workspace.Gravity = val end)
-b:Slider("FOV",{min = 0;max = 120;precise = false;},function(val) game.workspace.CurrentCamera.FieldOfView = val end)
+PlayerTab:AddSlider({
+    Name = "WalkSpeed",
+    Min = 0,
+    Max = 10000,
+    Default = 16,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "Speed",
+    Callback = function(value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+    end
+})
 
-function TPCFrame(Player_CFrame) if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Player_CFrame end end
-function RTPCFrame(M_CF) if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then M_CF.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame end end
-function PHP(Player_HP) if game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then game.Players.LocalPlayer.Character.Humanoid.Health = Player_HP end end
+PlayerTab:AddSlider({
+    Name = "JumpPower",
+    Min = 0,
+    Max = 10000,
+    Default = 50,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "Power",
+    Callback = function(value)
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+    end
+})
+
+PlayerTab:AddSlider({
+    Name = "Gravity",
+    Min = 0,
+    Max = 360,
+    Default = 196.2,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "Gravity",
+    Callback = function(value)
+        game.Workspace.Gravity = value
+    end
+})
+
+PlayerTab:AddSlider({
+    Name = "FOV",
+    Min = 70,
+    Max = 120,
+    Default = 70,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "FOV",
+    Callback = function(value)
+        game.Workspace.CurrentCamera.FieldOfView = value
+    end
+})
+
+-- Additional Buttons
+PlayerTab:AddButton({
+    Name = "Discord",
+    Callback = function()
+        setclipboard("workink.co/2GQ/LTD")
+    end
+})
+
+PlayerTab:AddButton({
+    Name = "Full Version",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/GphZf9Xe", true))()
+    end
+})
+
+PlayerTab:AddButton({
+    Name = "Rejoin",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/mM7JBG5h", true))()
+    end
+})
+
+PlayerTab:AddButton({
+    Name = "Reset",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/EEY6SATj", true))()
+    end
+})
+
+-- Destroy GUI Button
+PlayerTab:AddButton({
+    Name = "Destroy GUI",
+    Callback = function()
+        OrionLib:Destroy()
+    end
+})
+
+-- Initialization
+OrionLib:Init()
