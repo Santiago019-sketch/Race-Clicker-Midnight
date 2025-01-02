@@ -24,7 +24,7 @@ game:GetService("ReplicatedStorage").Packages.Knit.Services.RebirthService.RF.Re
     end)
 end
 
-local library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall%20v3')))()
+OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Orion%20Library%202')))()
 
 local w = library:CreateWindow("Race Clicker")
 
