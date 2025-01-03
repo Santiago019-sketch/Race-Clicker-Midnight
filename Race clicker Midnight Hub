@@ -1,32 +1,131 @@
--- Load Key System UI
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+-- Basic Key System UI
+local ScreenGui = Instance.new("ScreenGui")
+local Main = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local KeyInput = Instance.new("TextBox")
+local SubmitKey = Instance.new("TextButton")
+local GetKey = Instance.new("TextButton")
+local Status = Instance.new("TextLabel")
 
--- Create Key System Window
-local Window = Rayfield:CreateWindow({
-    Name = "Midnight Hub Key System",
-    LoadingTitle = "Midnight Hub",
-    LoadingSubtitle = "by Midnight Team",
-    ConfigurationSaving = {
-        Enabled = false,
-        FolderName = nil,
-        FileName = nil
-    },
-    KeySystem = true,
-    KeySettings = {
-        Title = "Midnight Hub | Key System",
-        Subtitle = "Key Required",
-        Note = "Join our Discord for key (discord.gg/yourdiscordhere)",
-        FileName = "MidnightKey",
-        SaveKey = false,
-        GrabKeyFromSite = false,
-        Key = {"MidnightHub2024", "PremiumUser123", "TestKey456"}
-    }
-})
+ScreenGui.Parent = game.CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Main Script (will only run after correct key)
+Main.Name = "Main"
+Main.Parent = ScreenGui
+Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Main.Position = UDim2.new(0.5, -150, 0.5, -100)
+Main.Size = UDim2.new(0, 300, 0, 200)
+Main.Active = true
+Main.Draggable = true
+
+Title.Name = "Title"
+Title.Parent = Main
+Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "Midnight Hub"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 22.000
+
+KeyInput.Name = "KeyInput"
+KeyInput.Parent = Main
+KeyInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+KeyInput.Position = UDim2.new(0.5, -125, 0.3, 0)
+KeyInput.Size = UDim2.new(0, 250, 0, 30)
+KeyInput.Font = Enum.Font.Gotham
+KeyInput.PlaceholderText = "Enter Key..."
+KeyInput.Text = ""
+KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyInput.TextSize = 14.000
+
+SubmitKey.Name = "SubmitKey"
+SubmitKey.Parent = Main
+SubmitKey.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+SubmitKey.Position = UDim2.new(0.5, -125, 0.5, 0)
+SubmitKey.Size = UDim2.new(0, 250, 0, 30)
+SubmitKey.Font = Enum.Font.GothamBold
+SubmitKey.Text = "Submit Key"
+SubmitKey.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubmitKey.TextSize = 14.000
+
+GetKey.Name = "GetKey"
+GetKey.Parent = Main
+GetKey.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+GetKey.Position = UDim2.new(0.5, -125, 0.7, 0)
+GetKey.Size = UDim2.new(0, 250, 0, 30)
+GetKey.Font = Enum.Font.Gotham
+GetKey.Text = "Get Key"
+GetKey.TextColor3 = Color3.fromRGB(255, 255, 255)
+GetKey.TextSize = 14.000
+
+Status.Name = "Status"
+Status.Parent = Main
+Status.BackgroundTransparency = 1
+Status.Position = UDim2.new(0, 0, 0.85, 0)
+Status.Size = UDim2.new(1, 0, 0, 30)
+Status.Font = Enum.Font.Gotham
+Status.Text = ""
+Status.TextColor3 = Color3.fromRGB(255, 255, 255)
+Status.TextSize = 14.000
+
+-- Add corners
+local function AddCorner(inst)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = inst
+end
+
+AddCorner(Main)
+AddCorner(KeyInput)
+AddCorner(SubmitKey)
+AddCorner(GetKey)
+
+-- Valid Keys
+local ValidKeys = {
+    "MidnightHub2024",
+    "PremiumUser123",
+    "TestKey456"
+}
+
+-- Get Key Button
+GetKey.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/yourdiscordhere") -- Replace with your Discord link
+    Status.Text = "Discord link copied!"
+    Status.TextColor3 = Color3.fromRGB(0, 255, 0)
+    wait(2)
+    Status.Text = ""
+end)
+
+-- Submit Key Button
+SubmitKey.MouseButton1Click:Connect(function()
+    local keyInput = KeyInput.Text
+    
+    -- Check if key is valid
+    local isValid = false
+    for _, validKey in pairs(ValidKeys) do
+        if keyInput == validKey then
+            isValid = true
+            break
+        end
+    end
+    
+    if isValid then
+        Status.Text = "Correct Key!"
+        Status.TextColor3 = Color3.fromRGB(0, 255, 0)
+        wait(1)
+        ScreenGui:Destroy()
+        loadMainScript()
+    else
+        Status.Text = "Invalid Key!"
+        Status.TextColor3 = Color3.fromRGB(255, 0, 0)
+        wait(2)
+        Status.Text = ""
+    end
+end)
+
+-- Main Script Function
 function loadMainScript()
     if game.PlaceId ~= 9285238704 then return end
-    Rayfield:Destroy() -- Destroy key system UI
     
     local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
     local Window = OrionLib:MakeWindow({Name = "Race Clicker", HidePremium = false, SaveConfig = true})
@@ -220,6 +319,3 @@ function loadMainScript()
     
     OrionLib:Init()
 end
-
--- Load main script after key verification
-loadMainScript()
