@@ -1,20 +1,15 @@
 -- Simple Key Configuration
 local ValidKeys = {
-    "MidnightHub2024",  -- Valid keys are now properly configured
+    "MidnightHub2024",
     "PremiumUser123",
     "TestKey456"
 }
 
--- Load Orion Library (using raw link for PlatooBoost compatibility)
+-- Load Orion Library
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 -- Create Initial Key System Window
-local KeyWindow = OrionLib:MakeWindow({
-    Name = "Race Clicker Key System", 
-    HidePremium = false, 
-    SaveConfig = true,
-    ConfigFolder = "MidnightHub"  -- Added config folder
-})
+local KeyWindow = OrionLib:MakeWindow({Name = "Race Clicker Key System", HidePremium = false, SaveConfig = true})
 
 -- Key System Tab
 local KeyTab = KeyWindow:MakeTab({
@@ -23,19 +18,30 @@ local KeyTab = KeyWindow:MakeTab({
     PremiumOnly = false
 })
 
--- Key System Variables (modified for better security)
+-- Key System Variables
 _G.KeyInput = ""
-_G.KeyCheck = false
-
--- Improved key checking function
-local function checkKey(input)
+_G.CheckKey = function()
     for _, validKey in pairs(ValidKeys) do
-        if input == validKey then
+        if _G.KeyInput == validKey then
             return true
         end
     end
     return false
 end
+
+-- Add Get Key Button
+KeyTab:AddButton({
+    Name = "Get Key",
+    Callback = function()
+        setclipboard("https://discord.gg/yourdiscordhere") -- Replace with your actual Discord link
+        OrionLib:MakeNotification({
+            Name = "Key System",
+            Content = "Discord link copied to clipboard!",
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
+    end
+})
 
 -- Key System UI
 KeyTab:AddTextbox({
@@ -50,8 +56,7 @@ KeyTab:AddTextbox({
 KeyTab:AddButton({
     Name = "Check Key",
     Callback = function()
-        if checkKey(_G.KeyInput) then
-            _G.KeyCheck = true
+        if _G.CheckKey() then
             KeyWindow:Destroy()
             loadMainScript()
         else
@@ -65,20 +70,13 @@ KeyTab:AddButton({
     end
 })
 
--- Main Script Function (optimized for PlatooBoost)
+-- Main Script Function
 function loadMainScript()
-    -- Prevent multiple instances
-    if _G.MainWindowLoaded then return end
-    _G.MainWindowLoaded = true
-
-    local Window = OrionLib:MakeWindow({
-        Name = "Race Clicker", 
-        HidePremium = false, 
-        SaveConfig = true,
-        ConfigFolder = "MidnightHub"
-    })
+    if game.PlaceId ~= 9285238704 then return end -- Check if correct game
     
-    -- Variables with error handling
+    local Window = OrionLib:MakeWindow({Name = "Race Clicker", HidePremium = false, SaveConfig = true})
+    
+    -- Variables
     local plr = game.Players.LocalPlayer
     local char = plr.Character or plr.CharacterAdded:Wait()
     
@@ -89,55 +87,47 @@ function loadMainScript()
         PremiumOnly = false
     })
 
-    -- Improved Utility Functions
+    -- Utility Functions
     function TPCFrame(Player_CFrame)
-        pcall(function()
-            if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                plr.Character.HumanoidRootPart.CFrame = Player_CFrame
-            end
-        end)
+        if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Player_CFrame
+        end
     end
 
-    -- Auto Click (optimized)
+    -- Auto Click
     MainTab:AddToggle({
         Name = "Auto Click",
         Default = false,
         Callback = function(Value)
             getgenv().AutoClick = Value
             while getgenv().AutoClick and task.wait() do
-                pcall(function()
-                    game:GetService("ReplicatedStorage").Packages.Knit.Services.ClickService.RF.Click:InvokeServer()
-                end)
+                game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ClickService"):WaitForChild("RF"):WaitForChild("Click"):InvokeServer()
             end
         end
     })
 
-    -- Auto Rebirth (optimized)
+    -- Auto Rebirth
     MainTab:AddToggle({
         Name = "Auto Rebirth",
         Default = false,
         Callback = function(Value)
             getgenv().AutoRebirth = Value
             while getgenv().AutoRebirth and task.wait() do
-                pcall(function()
-                    game:GetService("ReplicatedStorage").Packages.Knit.Services.RebirthService.RF.Rebirth:InvokeServer()
-                end)
+                game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("RebirthService"):WaitForChild("RF"):WaitForChild("Rebirth"):InvokeServer()
             end
         end
     })
 
-    -- Auto Race (improved teleport logic)
+    -- Auto Race
     MainTab:AddToggle({
         Name = "Auto Race",
         Default = false,
         Callback = function(Value)
             getgenv().AutoRace = Value
             while getgenv().AutoRace and task.wait() do
-                pcall(function()
-                    TPCFrame(CFrame.new(-442300, 26, 13))
-                    task.wait(0.1)
-                    TPCFrame(CFrame.new(-442100, 26, 13))
-                end)
+                TPCFrame(CFrame.new(-442300, 26, 13))
+                task.wait(0.1)
+                TPCFrame(CFrame.new(-442100, 26, 13))
             end
         end
     })
@@ -149,58 +139,54 @@ function loadMainScript()
         PremiumOnly = false
     })
 
-    -- Egg Selection (with all available eggs)
+    -- Egg Selection
     local selectedEgg = "Starter01"
     EggsTab:AddDropdown({
         Name = "Select Egg",
         Default = "Starter01",
-        Options = {"Starter01", "Starter02", "Starter03", "Starter04", "Pro01", "Pro02", "Pro03", "Legend01", "Legend02", "Legend03"},
+        Options = {"Starter01", "Starter02", "Starter03", "Starter04", "Pro01", "Pro02", "Pro03"},
         Callback = function(Value)
             selectedEgg = Value
         end
     })
 
-    -- Auto Hatch (optimized)
+    -- Auto Hatch
     EggsTab:AddToggle({
         Name = "Auto Hatch",
         Default = false,
         Callback = function(Value)
             getgenv().AutoHatch = Value
             while getgenv().AutoHatch and task.wait() do
-                pcall(function()
-                    local args = {
-                        [1] = selectedEgg,
-                        [2] = "1",
-                        [3] = {}
-                    }
-                    game:GetService("ReplicatedStorage").Packages.Knit.Services.EggService.RF.Open:InvokeServer(unpack(args))
-                end)
+                local args = {
+                    [1] = selectedEgg,
+                    [2] = "1",
+                    [3] = {}
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("EggService"):WaitForChild("RF"):WaitForChild("Open"):InvokeServer(unpack(args))
             end
         end
     })
 
-    -- Auto Equip Best (optimized)
+    -- Auto Equip Best
     EggsTab:AddToggle({
         Name = "Auto Equip Best",
         Default = false,
         Callback = function(Value)
             getgenv().AutoEquip = Value
             while getgenv().AutoEquip and task.wait(1) do
-                pcall(function()
-                    game:GetService("ReplicatedStorage").Packages.Knit.Services.PetsService.RF.EquipBest:InvokeServer()
-                end)
+                game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("PetsService"):WaitForChild("RF"):WaitForChild("EquipBest"):InvokeServer()
             end
         end
     })
 
-    -- Player Tab (with anti-cheat bypasses)
+    -- Player Tab
     local PlayerTab = Window:MakeTab({
         Name = "LocalPlayer",
         Icon = "rbxassetid://4483345998",
         PremiumOnly = false
     })
 
-    -- WalkSpeed Slider (with protection)
+    -- WalkSpeed Slider
     PlayerTab:AddSlider({
         Name = "WalkSpeed",
         Min = 16,
@@ -210,15 +196,13 @@ function loadMainScript()
         Increment = 1,
         ValueName = "Speed",
         Callback = function(Value)
-            pcall(function()
-                if char and char:FindFirstChild("Humanoid") then
-                    char.Humanoid.WalkSpeed = Value
-                end
-            end)
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = Value
+            end
         end    
     })
 
-    -- JumpPower Slider (with protection)
+    -- JumpPower Slider
     PlayerTab:AddSlider({
         Name = "JumpPower",
         Min = 50,
@@ -228,15 +212,13 @@ function loadMainScript()
         Increment = 1,
         ValueName = "Power",
         Callback = function(Value)
-            pcall(function()
-                if char and char:FindFirstChild("Humanoid") then
-                    char.Humanoid.JumpPower = Value
-                end
-            end)
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.JumpPower = Value
+            end
         end    
     })
 
-    -- FOV Slider (with protection)
+    -- FOV Slider
     PlayerTab:AddSlider({
         Name = "FOV",
         Min = 70,
@@ -246,9 +228,7 @@ function loadMainScript()
         Increment = 1,
         ValueName = "FOV",
         Callback = function(Value)
-            pcall(function()
-                game.Workspace.CurrentCamera.FieldOfView = Value
-            end)
+            game.Workspace.CurrentCamera.FieldOfView = Value
         end    
     })
 
