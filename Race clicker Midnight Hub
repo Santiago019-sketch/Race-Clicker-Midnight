@@ -1,76 +1,91 @@
--- Key System Configuration
-local service = 829  -- your platoboost service id
-local secret = "022a2c62-bbaf-44bf-bf4a-33d712f830e7"
-local useNonce = true
+-- Configuration
+local Config = {
+    DEBUG = false,
+    DEFAULT_WALKSPEED = 16,
+    DEFAULT_JUMPPOWER = 50,
+    UI_NOTIFICATION_DURATION = 5
+}
 
--- Set up message callback
-onMessage = function(message)
+-- Utility Functions
+local Utilities = {}
+
+function Utilities.notify(title, message)
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Key System",
+        Title = title,
         Text = message,
-        Duration = 5
+        Duration = Config.UI_NOTIFICATION_DURATION
     })
 end
 
--- Verify key before loading main script
-local function loadMainScript()
-    local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
-    local Window = OrionLib:MakeWindow({Name = "Race Clicker", HidePremium = false, SaveConfig = true, ConfigFolder = "RaceClicker"})
-
-    -- Variables
-    getgenv().A = false
-    getgenv().B = false
-    getgenv().H = false
-    getgenv().R = false
-    local E = nil
-
-    -- Rest of your original script...
-    function TPCFrame(Player_CFrame)
-        if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Player_CFrame
-        end
+function Utilities.safeInvoke(fn, ...)
+    local success, result = pcall(fn, ...)
+    if not success and Config.DEBUG then
+        warn("Error in function call:", result)
     end
+    return success, result
+end
 
-    function A()
-        spawn(function()
-            while getgenv().A do
+-- Character Functions
+local Character = {}
+
+function Character.teleport(targetCFrame)
+    local player = game.Players.LocalPlayer
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = targetCFrame
+    end
+end
+
+function Character.setWalkSpeed(speed)
+    local player = game.Players.LocalPlayer
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = speed
+    end
+end
+
+function Character.setJumpPower(power)
+    local player = game.Players.LocalPlayer
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.JumpPower = power
+    end
+end
+
+-- Game Actions
+local GameActions = {}
+
+function GameActions.autoClick()
+    spawn(function()
+        while getgenv().autoClickEnabled do
+            Utilities.safeInvoke(function()
                 game:GetService("ReplicatedStorage").Packages.Knit.Services.ClickService.RF.Click:InvokeServer()
-                TPCFrame(CFrame.new(-442300, 26, 13))
+                Character.teleport(CFrame.new(-442300, 26, 13))
                 task.wait()
-                TPCFrame(CFrame.new(-442100, 26, 13))
-                if not getgenv().A then break end
-                task.wait()
-            end
-        end)
-    end
+                Character.teleport(CFrame.new(-442100, 26, 13))
+            end)
+            task.wait()
+        end
+    end)
+end
 
-    function B()
-        spawn(function()
-            while getgenv().B do
+function GameActions.autoEquipBest()
+    spawn(function()
+        while getgenv().autoEquipEnabled do
+            Utilities.safeInvoke(function()
                 game:GetService("ReplicatedStorage").Packages.Knit.Services.PetsService.RF.EquipBest:InvokeServer()
-                task.wait(1)
-            end
-        end)
-    end
+            end)
+            task.wait(1)
+        end
+    end)
+end
 
-    function H()
-        spawn(function()
-            while getgenv().H do
-                local args = {[1] = E, [2] = "1", [3] = {}}
-                game:GetService("ReplicatedStorage").Packages.Knit.Services.EggService.RF.Open:InvokeServer(unpack(args))
-                task.wait()
-            end
-        end)
-    end
-
-    function R()
-        spawn(function()
-            while getgenv().R do
-                game:GetService("ReplicatedStorage").Packages.Knit.Services.RebirthService.RF.Rebirth:InvokeServer()
-                task.wait()
-            end
-        end)
-    end
+-- UI Creation
+local function createUI()
+    local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+    local Window = OrionLib:MakeWindow({
+        Name = "Race Clicker",
+        HidePremium = false,
+        SaveConfig = true,
+        ConfigFolder = "RaceClicker"
+    })
 
     -- Main Tab
     local MainTab = Window:MakeTab({
@@ -80,47 +95,20 @@ local function loadMainScript()
     })
 
     MainTab:AddToggle({
-        Name = "Inf. Wins/Inf. Speed",
+        Name = "Auto Click",
         Default = false,
         Callback = function(value)
-            getgenv().A = value
-            if value then A() end
+            getgenv().autoClickEnabled = value
+            if value then GameActions.autoClick() end
         end
     })
 
     MainTab:AddToggle({
-        Name = "Inf. Rebirths",
+        Name = "Auto Equip Best",
         Default = false,
         Callback = function(value)
-            getgenv().R = value
-            if value then R() end
-        end
-    })
-
-    MainTab:AddToggle({
-        Name = "Equip Best",
-        Default = false,
-        Callback = function(value)
-            getgenv().B = value
-            if value then B() end
-        end
-    })
-
-    MainTab:AddToggle({
-        Name = "Hatch",
-        Default = false,
-        Callback = function(value)
-            getgenv().H = value
-            if value then H() end
-        end
-    })
-
-    MainTab:AddDropdown({
-        Name = "Select Egg",
-        Default = "Starter01",
-        Options = {"Starter01", "Starter02", "Starter03", "Starter04", "Pro01", "Pro02", "Pro03"},
-        Callback = function(value)
-            E = value
+            getgenv().autoEquipEnabled = value
+            if value then GameActions.autoEquipBest() end
         end
     })
 
@@ -134,70 +122,41 @@ local function loadMainScript()
     PlayerTab:AddSlider({
         Name = "WalkSpeed",
         Min = 0,
-        Max = 10000,
-        Default = 16,
+        Max = 1000,
+        Default = Config.DEFAULT_WALKSPEED,
         Color = Color3.fromRGB(255,255,255),
         Increment = 1,
         ValueName = "Speed",
         Callback = function(value)
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+            Character.setWalkSpeed(value)
         end
     })
 
     PlayerTab:AddSlider({
         Name = "JumpPower",
         Min = 0,
-        Max = 10000,
-        Default = 50,
+        Max = 1000,
+        Default = Config.DEFAULT_JUMPPOWER,
         Color = Color3.fromRGB(255,255,255),
         Increment = 1,
         ValueName = "Power",
         Callback = function(value)
-            game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+            Character.setJumpPower(value)
         end
     })
 
-    -- [Rest of your UI components...]
-
-    OrionLib:Init()
+    return OrionLib
 end
 
--- Create key system UI
-local KeySystemUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
-local KeyWindow = KeySystemUI:MakeWindow({Name = "Key System", HidePremium = true, SaveConfig = false})
-
-local KeyTab = KeyWindow:MakeTab({
-    Name = "Key",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-local keyBox 
-KeyTab:AddTextbox({
-    Name = "Enter Key",
-    Default = "",
-    TextDisappear = false,
-    Callback = function(Value)
-        keyBox = Value
+-- Initialize
+local function init()
+    local success, UI = Utilities.safeInvoke(createUI)
+    if success then
+        UI:Init()
+        Utilities.notify("Success", "Script loaded successfully!")
+    else
+        Utilities.notify("Error", "Failed to load UI")
     end
-})
+end
 
-KeyTab:AddButton({
-    Name = "Get Key",
-    Callback = function()
-        copyLink()
-    end
-})
-
-KeyTab:AddButton({
-    Name = "Check Key",
-    Callback = function()
-        if verifyKey(keyBox) then
-            KeySystemUI:Destroy()
-            loadMainScript()
-        end
-    end
-})
-
--- Initialize key system
-KeySystemUI:Init()
+init()
