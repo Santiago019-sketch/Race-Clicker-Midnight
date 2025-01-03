@@ -1,8 +1,11 @@
--- Key System Configuration
-local service = 829  -- Replace with your actual service ID
-local secret = "022a2c62-bbaf-44bf-bf4a-33d712f830e7"  -- Replace with your actual secret
+-- Simple Key Configuration
+local ValidKeys = {
+    "MidnightHub2024",  -- You can modify these keys
+    "PremiumUser123",
+    "TestKey456"
+}
 
--- Load Libraries
+-- Load Orion Library
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 -- Create Initial Key System Window
@@ -16,10 +19,14 @@ local KeyTab = KeyWindow:MakeTab({
 })
 
 -- Key System Variables
-_G.KeyInput = "string"
+_G.KeyInput = ""
 _G.CheckKey = function()
-    -- Replace with your actual key check logic
-    return _G.KeyInput == "MidnightHub" -- Replace with your actual key
+    for _, validKey in pairs(ValidKeys) do
+        if _G.KeyInput == validKey then
+            return true
+        end
+    end
+    return false
 end
 
 -- Key System UI
@@ -41,24 +48,11 @@ KeyTab:AddButton({
         else
             OrionLib:MakeNotification({
                 Name = "Wrong Key!",
-                Content = "Join Discord for key (Copy Discord Link Below)",
+                Content = "Please enter the correct key to continue",
                 Image = "rbxassetid://4483345998",
                 Time = 5
             })
         end
-    end
-})
-
-KeyTab:AddButton({
-    Name = "Copy Discord Link",
-    Callback = function()
-        setclipboard("https://discord.gg/nD2kXufNAU")
-        OrionLib:MakeNotification({
-            Name = "Discord Link Copied!",
-            Content = "Paste it in your browser!",
-            Image = "rbxassetid://4483345998",
-            Time = 5
-        })
     end
 })
 
@@ -76,6 +70,13 @@ function loadMainScript()
         Icon = "rbxassetid://4483345998",
         PremiumOnly = false
     })
+
+    -- Utility Functions
+    function TPCFrame(Player_CFrame)
+        if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Player_CFrame
+        end
+    end
 
     -- Auto Click
     MainTab:AddToggle({
@@ -108,10 +109,9 @@ function loadMainScript()
         Callback = function(Value)
             getgenv().AutoRace = Value
             while getgenv().AutoRace and task.wait() do
-                if not char:FindFirstChild("HumanoidRootPart") then continue end
-                char.HumanoidRootPart.CFrame = CFrame.new(-442300, 26, 13)
+                TPCFrame(CFrame.new(-442300, 26, 13))
                 task.wait(0.1)
-                char.HumanoidRootPart.CFrame = CFrame.new(-442100, 26, 13)
+                TPCFrame(CFrame.new(-442100, 26, 13))
             end
         end
     })
@@ -165,7 +165,7 @@ function loadMainScript()
 
     -- Player Tab
     local PlayerTab = Window:MakeTab({
-        Name = "Player",
+        Name = "LocalPlayer",
         Icon = "rbxassetid://4483345998",
         PremiumOnly = false
     })
@@ -180,7 +180,9 @@ function loadMainScript()
         Increment = 1,
         ValueName = "Speed",
         Callback = function(Value)
-            char.Humanoid.WalkSpeed = Value
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = Value
+            end
         end    
     })
 
@@ -194,8 +196,24 @@ function loadMainScript()
         Increment = 1,
         ValueName = "Power",
         Callback = function(Value)
-            char.Humanoid.JumpPower = Value
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.JumpPower = Value
+            end
         end    
+    })
+
+    -- FOV Slider
+    PlayerTab:AddSlider({
+        Name = "FOV",
+        Min = 70,
+        Max = 120,
+        Default = 70,
+        Color = Color3.fromRGB(255,255,255),
+        Increment = 1,
+        ValueName = "FOV",
+        Callback = function(Value)
+            game.Workspace.CurrentCamera.FieldOfView = Value
+        end
     })
 
     -- Utility Buttons
@@ -209,11 +227,20 @@ function loadMainScript()
     PlayerTab:AddButton({
         Name = "Reset Character",
         Callback = function()
-            char:BreakJoints()
+            if char then
+                char:BreakJoints()
+            end
         end    
     })
 
-    -- Credits
+    PlayerTab:AddButton({
+        Name = "Destroy GUI",
+        Callback = function()
+            OrionLib:Destroy()
+        end    
+    })
+
+    -- Credits Tab
     local CreditsTab = Window:MakeTab({
         Name = "Credits",
         Icon = "rbxassetid://4483345998",
@@ -221,7 +248,7 @@ function loadMainScript()
     })
 
     CreditsTab:AddLabel("Made by Midnight Hub")
-    CreditsTab:AddLabel("Discord: discord.gg/nD2kXufNAU")
 end
 
+-- Initialize the UI
 OrionLib:Init()
