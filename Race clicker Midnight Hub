@@ -1,79 +1,34 @@
--- Simple Key Configuration
-local ValidKeys = {
-    "MidnightHub2024",
-    "PremiumUser123",
-    "TestKey456"
-}
+-- Load Key System UI
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
 
--- Load Orion Library
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-
--- Create Initial Key System Window
-local KeyWindow = OrionLib:MakeWindow({Name = "Race Clicker Key System", HidePremium = false, SaveConfig = true})
-
--- Key System Tab
-local KeyTab = KeyWindow:MakeTab({
-    Name = "Key System",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
+-- Create Key System Window
+local Window = Rayfield:CreateWindow({
+    Name = "Midnight Hub Key System",
+    LoadingTitle = "Midnight Hub",
+    LoadingSubtitle = "by Midnight Team",
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = nil,
+        FileName = nil
+    },
+    KeySystem = true,
+    KeySettings = {
+        Title = "Midnight Hub | Key System",
+        Subtitle = "Key Required",
+        Note = "Join our Discord for key (discord.gg/yourdiscordhere)",
+        FileName = "MidnightKey",
+        SaveKey = false,
+        GrabKeyFromSite = false,
+        Key = {"MidnightHub2024", "PremiumUser123", "TestKey456"}
+    }
 })
 
--- Key System Variables
-_G.KeyInput = ""
-_G.CheckKey = function()
-    for _, validKey in pairs(ValidKeys) do
-        if _G.KeyInput == validKey then
-            return true
-        end
-    end
-    return false
-end
-
--- Add Get Key Button
-KeyTab:AddButton({
-    Name = "Get Key",
-    Callback = function()
-        setclipboard("https://discord.gg/yourdiscordhere") -- Replace with your actual Discord link
-        OrionLib:MakeNotification({
-            Name = "Key System",
-            Content = "Discord link copied to clipboard!",
-            Image = "rbxassetid://4483345998",
-            Time = 5
-        })
-    end
-})
-
--- Key System UI
-KeyTab:AddTextbox({
-    Name = "Enter Key",
-    Default = "",
-    TextDisappear = true,
-    Callback = function(Value)
-        _G.KeyInput = Value
-    end    
-})
-
-KeyTab:AddButton({
-    Name = "Check Key",
-    Callback = function()
-        if _G.CheckKey() then
-            KeyWindow:Destroy()
-            loadMainScript()
-        else
-            OrionLib:MakeNotification({
-                Name = "Wrong Key!",
-                Content = "Please enter the correct key to continue",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
-        end
-    end
-})
-
--- Main Script Function
+-- Main Script (will only run after correct key)
 function loadMainScript()
-    if game.PlaceId ~= 9285238704 then return end -- Check if correct game
+    if game.PlaceId ~= 9285238704 then return end
+    Rayfield:Destroy() -- Destroy key system UI
     
+    local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
     local Window = OrionLib:MakeWindow({Name = "Race Clicker", HidePremium = false, SaveConfig = true})
     
     -- Variables
@@ -262,7 +217,9 @@ function loadMainScript()
     })
 
     CreditsTab:AddLabel("Made by Midnight Hub")
+    
+    OrionLib:Init()
 end
 
--- Initialize the UI
-OrionLib:Init()
+-- Load main script after key verification
+loadMainScript()
