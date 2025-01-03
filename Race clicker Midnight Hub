@@ -1,122 +1,203 @@
--- Constants stored in encrypted format
-local ENCRYPTED_CONSTANTS = {
-    GUI_NAME = "UmFjZSBDbGlja2Vy",  -- Base64 encoded
-    ORION_URL = game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"),
-    DEFAULT_EGG = "Starter01"
-}
+-- Key System Configuration
+local service = 829  -- your platoboost service id
+local secret = "022a2c62-bbaf-44bf-bf4a-33d712f830e7"
+local useNonce = true
 
--- Secure remote calls
-local RemoteService = {
-    Click = game:GetService("ReplicatedStorage").Packages.Knit.Services.ClickService.RF.Click,
-    Pets = game:GetService("ReplicatedStorage").Packages.Knit.Services.PetsService.RF.EquipBest,
-    Egg = game:GetService("ReplicatedStorage").Packages.Knit.Services.EggService.RF.Open,
-    Rebirth = game:GetService("ReplicatedStorage").Packages.Knit.Services.RebirthService.RF.Rebirth
-}
-
--- Protected variables with closures
-local protected = {
-    autoFarm = false,
-    autoPets = false,
-    autoHatch = false,
-    autoRebirth = false,
-    selectedEgg = ENCRYPTED_CONSTANTS.DEFAULT_EGG
-}
-
--- Secure teleport function with validation
-local function secureTeleport(targetCFrame)
-    local character = game.Players.LocalPlayer.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-    
-    -- Validate CFrame
-    if typeof(targetCFrame) ~= "CFrame" then return end
-    
-    -- Add random offset for anti-detection
-    local offset = Vector3.new(math.random(-1, 1), 0, math.random(-1, 1))
-    character.HumanoidRootPart.CFrame = targetCFrame * CFrame.new(offset)
+-- Set up message callback
+onMessage = function(message)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Key System",
+        Text = message,
+        Duration = 5
+    })
 end
 
--- Main farming function with error handling
-local function startAutoFarm()
-    spawn(function()
-        while protected.autoFarm do
-            pcall(function()
-                RemoteService.Click:InvokeServer()
-                secureTeleport(CFrame.new(-442300, 26, 13))
-                task.wait(math.random(1, 3)/10) -- Randomized delays
-                secureTeleport(CFrame.new(-442100, 26, 13))
-            end)
-            task.wait()
+-- Verify key before loading main script
+local function loadMainScript()
+    local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+    local Window = OrionLib:MakeWindow({Name = "Race Clicker", HidePremium = false, SaveConfig = true, ConfigFolder = "RaceClicker"})
+
+    -- Variables
+    getgenv().A = false
+    getgenv().B = false
+    getgenv().H = false
+    getgenv().R = false
+    local E = nil
+
+    -- Rest of your original script...
+    function TPCFrame(Player_CFrame)
+        if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Player_CFrame
         end
-    end)
-end
-
--- Create secured GUI
-local OrionLib = loadstring(ENCRYPTED_CONSTANTS.ORION_URL)()
-local Window = OrionLib:MakeWindow({
-    Name = ENCRYPTED_CONSTANTS.GUI_NAME,
-    HidePremium = false,
-    SaveConfig = true,
-    ConfigFolder = "SecuredRaceClicker"
-})
-
--- Main Tab with secured callbacks
-local MainTab = Window:MakeTab({
-    Name = "Main",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-MainTab:AddToggle({
-    Name = "Auto Farm",
-    Default = false,
-    Callback = function(value)
-        protected.autoFarm = value
-        if value then startAutoFarm() end
     end
-})
 
--- Add other toggles and features here following the same pattern
-
--- Secure player modifications
-local PlayerTab = Window:MakeTab({
-    Name = "Player",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-PlayerTab:AddSlider({
-    Name = "WalkSpeed",
-    Min = 0,
-    Max = 500, -- Reduced max value for better anti-detection
-    Default = 16,
-    Color = Color3.fromRGB(255,255,255),
-    Increment = 1,
-    ValueName = "Speed",
-    Callback = function(value)
-        pcall(function()
-            local character = game.Players.LocalPlayer.Character
-            if character and character:FindFirstChild("Humanoid") then
-                character.Humanoid.WalkSpeed = value
+    function A()
+        spawn(function()
+            while getgenv().A do
+                game:GetService("ReplicatedStorage").Packages.Knit.Services.ClickService.RF.Click:InvokeServer()
+                TPCFrame(CFrame.new(-442300, 26, 13))
+                task.wait()
+                TPCFrame(CFrame.new(-442100, 26, 13))
+                if not getgenv().A then break end
+                task.wait()
             end
         end)
     end
+
+    function B()
+        spawn(function()
+            while getgenv().B do
+                game:GetService("ReplicatedStorage").Packages.Knit.Services.PetsService.RF.EquipBest:InvokeServer()
+                task.wait(1)
+            end
+        end)
+    end
+
+    function H()
+        spawn(function()
+            while getgenv().H do
+                local args = {[1] = E, [2] = "1", [3] = {}}
+                game:GetService("ReplicatedStorage").Packages.Knit.Services.EggService.RF.Open:InvokeServer(unpack(args))
+                task.wait()
+            end
+        end)
+    end
+
+    function R()
+        spawn(function()
+            while getgenv().R do
+                game:GetService("ReplicatedStorage").Packages.Knit.Services.RebirthService.RF.Rebirth:InvokeServer()
+                task.wait()
+            end
+        end)
+    end
+
+    -- Main Tab
+    local MainTab = Window:MakeTab({
+        Name = "Main",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    MainTab:AddToggle({
+        Name = "Inf. Wins/Inf. Speed",
+        Default = false,
+        Callback = function(value)
+            getgenv().A = value
+            if value then A() end
+        end
+    })
+
+    MainTab:AddToggle({
+        Name = "Inf. Rebirths",
+        Default = false,
+        Callback = function(value)
+            getgenv().R = value
+            if value then R() end
+        end
+    })
+
+    MainTab:AddToggle({
+        Name = "Equip Best",
+        Default = false,
+        Callback = function(value)
+            getgenv().B = value
+            if value then B() end
+        end
+    })
+
+    MainTab:AddToggle({
+        Name = "Hatch",
+        Default = false,
+        Callback = function(value)
+            getgenv().H = value
+            if value then H() end
+        end
+    })
+
+    MainTab:AddDropdown({
+        Name = "Select Egg",
+        Default = "Starter01",
+        Options = {"Starter01", "Starter02", "Starter03", "Starter04", "Pro01", "Pro02", "Pro03"},
+        Callback = function(value)
+            E = value
+        end
+    })
+
+    -- Player Tab
+    local PlayerTab = Window:MakeTab({
+        Name = "LocalPlayer",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    PlayerTab:AddSlider({
+        Name = "WalkSpeed",
+        Min = 0,
+        Max = 10000,
+        Default = 16,
+        Color = Color3.fromRGB(255,255,255),
+        Increment = 1,
+        ValueName = "Speed",
+        Callback = function(value)
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+        end
+    })
+
+    PlayerTab:AddSlider({
+        Name = "JumpPower",
+        Min = 0,
+        Max = 10000,
+        Default = 50,
+        Color = Color3.fromRGB(255,255,255),
+        Increment = 1,
+        ValueName = "Power",
+        Callback = function(value)
+            game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+        end
+    })
+
+    -- [Rest of your UI components...]
+
+    OrionLib:Init()
+end
+
+-- Create key system UI
+local KeySystemUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local KeyWindow = KeySystemUI:MakeWindow({Name = "Key System", HidePremium = true, SaveConfig = false})
+
+local KeyTab = KeyWindow:MakeTab({
+    Name = "Key",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
 })
 
--- Add other features similarly
+local keyBox 
+KeyTab:AddTextbox({
+    Name = "Enter Key",
+    Default = "",
+    TextDisappear = false,
+    Callback = function(Value)
+        keyBox = Value
+    end
+})
 
--- Anti-tampering check
-spawn(function()
-    while task.wait(1) do
-        if not protected then
-            game.Players.LocalPlayer:Kick("Script tampering detected")
-            break
+KeyTab:AddButton({
+    Name = "Get Key",
+    Callback = function()
+        copyLink()
+    end
+})
+
+KeyTab:AddButton({
+    Name = "Check Key",
+    Callback = function()
+        if verifyKey(keyBox) then
+            KeySystemUI:Destroy()
+            loadMainScript()
         end
     end
-end)
+})
 
-OrionLib:Init()
-
--- Cleanup handler
-game.Players.LocalPlayer.OnTeleport:Connect(function()
-    OrionLib:Destroy()
-end)
+-- Initialize key system
+KeySystemUI:Init()
